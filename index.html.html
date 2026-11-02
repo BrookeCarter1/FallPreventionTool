@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VHA Fall Risk Screening Assistant</title>
+<style>
+:root{--navy:#112e51;--blue:#0071bb;--lblue:#e1f3f8;--grey:#f1f1f1;--mid:#5b616b;--green:#2e7d32;--amber:#b26a00;--red:#b50909;--line:#d6d7d9}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#212121;background:#f7f8fa;line-height:1.4}
+header{background:var(--navy);color:#fff;padding:14px 22px}
+header h1{margin:0;font-size:20px}
+header p{margin:4px 0 0;font-size:13px;color:#cfd8e3}
+.banner{background:#fff4d6;border-bottom:2px solid #e0b100;padding:8px 22px;font-size:13px}
+.wrap{max-width:1050px;margin:0 auto;padding:16px}
+nav.steps{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+nav.steps button{flex:1;min-width:150px;padding:10px;border:1px solid var(--line);background:#fff;border-radius:6px;cursor:pointer;font-weight:bold;color:var(--mid);text-align:left}
+nav.steps button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+nav.steps button span{display:block;font-weight:normal;font-size:12px}
+#summary{position:sticky;top:0;z-index:5;background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px}
+.chip{border-radius:14px;padding:3px 10px;background:var(--grey);border:1px solid var(--line)}
+.chip b{margin-right:4px}
+.low{background:#e3f4e4;border-color:#9ccc9f;color:#1b5e20}
+.moderate{background:#fff0d1;border-color:#e6b84d;color:#7a4b00}
+.high{background:#fbe0e0;border-color:#e08a8a;color:#8c0b0b}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:14px}
+.card h2{margin:0 0 4px;font-size:17px;color:var(--navy)}
+.card h3{margin:14px 0 6px;font-size:14px;color:var(--navy)}
+.hint{color:var(--mid);font-size:12.5px;margin:2px 0 8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+label.f{display:block;font-weight:bold;font-size:13px;margin-bottom:3px}
+input[type=text],input[type=number],select,textarea{width:100%;padding:8px;border:1px solid #8d9297;border-radius:4px;font:inherit;background:#fff}
+textarea{font-family:Consolas,"Courier New",monospace;font-size:13px}
+.rg{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
+.pill{border:1px solid #8d9297;border-radius:18px;padding:5px 12px;cursor:pointer;background:#fff;display:inline-flex;align-items:center;gap:6px;font-size:14px}
+.pill:has(input:checked){background:var(--blue);color:#fff;border-color:var(--blue)}
+.pill input{accent-color:#fff}
+.q{border-top:1px solid var(--line);padding:8px 0}
+.q:first-of-type{border-top:0}
+.q .t{font-weight:bold}
+.cbl{display:flex;gap:8px;align-items:flex-start;padding:4px 0}
+.cbl input{margin-top:3px;width:17px;height:17px;flex:none}
+.btn{background:var(--blue);color:#fff;border:0;border-radius:5px;padding:9px 16px;font-size:14px;cursor:pointer;font-weight:bold}
+.btn.sec{background:#fff;color:var(--blue);border:1px solid var(--blue)}
+.btn.warn{background:#fff;color:var(--red);border:1px solid var(--red)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.alert{border-left:5px solid var(--red);background:#fdecec;padding:8px 12px;margin:8px 0;border-radius:3px}
+.info{border-left:5px solid var(--blue);background:var(--lblue);padding:8px 12px;margin:8px 0;border-radius:3px}
+.ok{color:var(--green);font-weight:bold}.no{color:var(--amber);font-weight:bold}
+table.qa{border-collapse:collapse;width:100%;font-size:13.5px}
+table.qa td,table.qa th{border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left}
+table.qa th{background:var(--navy);color:#fff}
+.score{font-size:22px;font-weight:bold}
+.big{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.sc{border:2px solid var(--line);border-radius:8px;padding:10px;cursor:pointer;background:#fff}
+.sc:has(input:checked){border-color:var(--blue);background:var(--lblue)}
+.sc b{display:block}.sc span{font-size:12.5px;color:var(--mid)}
+.sc input{float:right}
+small.m{color:var(--mid)}
+.mrow{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:2px 14px;border-top:1px solid var(--line);padding:5px 0}
+.mrow .t{flex:1 1 250px;font-weight:bold}.mrow .rg{margin:0;flex:0 1 auto}
+.lnk{border:0;background:none;color:var(--blue);cursor:pointer;font-size:12px;text-decoration:underline;margin-left:8px;padding:0}
+.btn.q2{padding:6px 12px;font-size:13px}
+.eq li{margin:2px 0}
+footer{max-width:1050px;margin:0 auto;padding:6px 16px 30px;font-size:12px;color:var(--mid)}
+#tipsModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;overflow:auto;padding:16px}
+#tipsModal .sheetwrap{background:#fff;max-width:1000px;margin:0 auto;padding:14px;border-radius:8px}
+#tipsModal .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+#tipsModal .bar input{width:200px}
+.tips{border:3px solid #112e51;padding:10px;font-family:Arial,Helvetica,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.tips h1{margin:0;font-size:24px;color:#112e51;display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap}
+.tips h1 small{font-size:12px;font-weight:normal;color:#333}
+.tcols{display:grid;grid-template-columns:34% 66%;gap:10px;margin-top:8px}
+.tcol h2{margin:0 0 6px;font-size:15px;background:#112e51;color:#fff;padding:4px 8px}
+.rk{display:flex;align-items:center;gap:10px;padding:7px 4px;border-bottom:1px solid #ddd;font-size:15px;font-weight:bold}
+.rk .bx{width:26px;height:26px;border:3px solid;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font-size:20px;line-height:1;background:#fff;flex:none}
+.tg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tp{border:2px solid #777;border-radius:6px;padding:7px;font-size:13.5px}
+.tp h3{margin:0 0 4px;font-size:14px}
+.tp.wide{grid-column:1/3}
+.to{display:inline-block;margin:2px 3px;padding:3px 8px;border:2px solid #bbb;border-radius:14px;color:#888;background:#fff}
+.to.on{border-color:#000;color:#000;font-weight:bold;background:#fff;box-shadow:0 0 0 2px #000 inset}
+.tinfo{margin-top:8px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px;font-size:13px}
+.tinfo div{border:1px solid #999;padding:5px 7px}
+.tfoot{margin-top:6px;font-size:10.5px;color:#444}
+@media print{
+ @page{size:landscape;margin:.4in}
+ body *{visibility:hidden}
+ #tipsModal,#tipsModal *{visibility:visible}
+ #tipsModal{position:absolute;left:0;top:0;width:100%;padding:0;background:#fff;overflow:visible;display:block}
+ #tipsModal .bar,#tipsModal .grid,#tipsModal .noprint{display:none}
+ #tipsModal .sheetwrap{padding:0;max-width:none}
+ header,.banner,nav.steps,#summary,.row,footer{display:none}.card{border:0}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>VHA Fall Risk Screening Assistant</h1>
+  <p>Based on the VHA Fall Prevention &amp; Management Bundle (National Center for Patient Safety, June 2026)</p>
+</header>
+<div class="banner"><b>Clinical decision support only.</b> Use your clinical judgment. This page runs entirely in your browser: nothing is saved, stored or sent anywhere, and closing the page erases it. Do not type the Veteran's name or SSN. Copy the finished note into CPRS while the correct patient is open.</div>
+<div class="wrap">
+  <nav class="steps" id="steps"></nav>
+  <div id="summary"></div>
+  <div id="panel"></div>
+</div>
+<footer>Risk tools reproduced from the June 2026 bundle (Morse Fall Scale, ABCS, VA-MSST, TIPS, CDC STEADI, MAHC-10). Confirm against the official forms and your facility policy before clinical use. This tool is not a medical record and has not been reviewed or approved by VA for clinical use; obtain local review (clinical informatics, privacy, ISSO) before using it with patients.</footer>
+
+<script>
+"use strict";
+/* ============================ DATA ============================ */
+const SETTINGS = {
+  acute:{name:"Acute Care (Medical/Surgical)",tools:["morse","abcs","msst","tips"],
+    reassess:"Every 24 hours (some facilities every shift) and with any condition change, transfer, or fall.",
+    types:["Admission","Scheduled reassessment","Change in condition","Transfer","After a fall"],
+    actions:[{t:"Score Morse Fall Scale",auto:"morse"},{t:"Complete ABCS tool",auto:"abcs"},{t:"Document MSST level",auto:"msst"},{t:"Confirm equipment at bedside"},{t:"Generate TIPS sheet and post at bedside",auto:"tips"}]},
+  icu:{name:"Intensive Care Unit (ICU)",tools:["morse","abcs","msst","tips"],
+    reassess:"Every shift, at every critical transition (ventilator weaning, sedation reduction, step-down), and after any fall or close call.",
+    types:["ICU admission","Shift reassessment","Critical transition","Change in condition","After a fall"],
+    actions:[{t:"Score Morse Fall Scale each shift",auto:"morse"},{t:"Complete ABCS tool each shift",auto:"abcs"},{t:"Screen for delirium per facility protocol",auto:"delirium"},{t:"Generate and update TIPS sheet at every critical transition",auto:"tips"},{t:"Confirm MSST level and equipment before each mobility task",auto:"msst"}]},
+  mh:{name:"Inpatient Mental Health Unit",tools:["morse","abcs","msst","tips"],
+    reassess:"Every 24 hours (or per facility) and with any condition change, transfer, or fall.",
+    types:["Admission","Scheduled reassessment","Change in condition","Transfer","After a fall"],
+    actions:[{t:"Score Morse Fall Scale",auto:"morse"},{t:"Complete ABCS tool",auto:"abcs"},{t:"Complete MSST",auto:"msst"},{t:"Generate TIPS sheet (note ligature-risk equipment modifications per VHA Directive 1167)",auto:"tips"},{t:"Initiate pharmacy review for psychotropic side effects"},{t:"Coordinate with Safety Office for equipment adaptations"}]},
+  clc:{name:"Community Living Center (CLC)",tools:["morse","abcs","msst","clcplan"],
+    reassess:"At least quarterly with the MDS, immediately after any fall, and with any condition change. For high risk (MFS 45+), review the MSST level and care plan weekly and after every fall.",
+    types:["Admission / re-admission","Quarterly (MDS-linked) review","Change in condition","After a fall","Care transition / discharge planning"],
+    actions:[{t:"Score Morse Fall Scale and fall injury risk factors on admission",auto:"morse"},{t:"Complete MSST",auto:"msst"},{t:"Confirm equipment at bedside"},{t:"Develop Veteran-centered Fall Prevention care plan",auto:"clcplan"},{t:"Review with IDT and Veteran/family"},{t:"Update quarterly with MDS and after any fall or condition change"}]},
+  amb:{name:"Ambulatory / Primary Care and CBOCs",tools:["steadi"],
+    reassess:"Annually for Veterans 65 and older (low risk); at every applicable visit for Veterans with known fall risk factors.",
+    types:["Annual screen (age 65+)","Visit for Veteran with known fall risk","Follow-up after a fall"],
+    actions:[{t:"Screen with Stay Independent brochure / three key questions",auto:"steadi"},{t:"If positive, administer Timed Up and Go, Chair Stand, and Balance Test",auto:"steaditests"},{t:"Develop individualized plan of care"},{t:"Refer to PT/OT/Pharmacy as indicated"}]},
+  hbpc:{name:"Home-Based Primary Care (HBPC)",tools:["mahc"],
+    reassess:"At enrollment, every 60 days, after any fall, and with significant change in status.",
+    types:["Enrollment","60-day reassessment","After a fall","Significant change in status"],
+    actions:[{t:"Administer MAHC-10",auto:"mahc"},{t:"Complete home hazard assessment"},{t:"If moderate/high risk: refer to OT for home modifications, PT for exercise program, social work for caregiver support"},{t:"Educate Veteran and family on emergency response plan"}]}
+};
+const TABLE_ROWS = {
+  acute:["Morse Fall Scale, ABCS, MSST, TIPS","Score Morse Fall Scale and complete ABCS tool; document MSST level; confirm equipment at bedside; generate TIPS sheet and post at bedside. Reassess every 24 hours and with any condition change."],
+  icu:["Morse Fall Scale, ABCS, MSST, TIPS","Score Morse Fall Scale and complete ABCS tool each shift; screen for delirium per facility protocol; generate and update TIPS sheet at every critical transition (ventilator weaning, sedation reduction, step-down); confirm MSST level and equipment before each mobility task."],
+  mh:["Morse Fall Scale, ABCS, MSST, TIPS (behavioral adaptation)","Score Morse Fall Scale and complete ABCS tool; complete MSST; generate TIPS sheet (note ligature-risk equipment modifications per VHA Directive 1167). Initiate pharmacy review for psychotropic side effects. Coordinate with Safety Office for equipment adaptations."],
+  clc:["Morse Fall Scale, Fall Injury Risk factors, MSST, Veteran-centered Fall Prevention Care Plan","Score Morse Fall Scale and fall injury risk factors on admission; complete MSST; confirm equipment at bedside; develop Veteran-centered Fall Prevention care plan. Review with IDT and Veteran/family. Update quarterly with MDS and after any fall or condition change."],
+  amb:["CDC STEADI (3-question screen)","Screen all Veterans 65 and older annually with Stay Independent brochure. If positive for fall history, unsteadiness, or fear of falling, administer Timed Up and Go, Chair Stand, and Balance Test. Develop individualized plan of care; refer to PT/OT/Pharmacy as indicated."],
+  hbpc:["MAHC-10","Administer MAHC-10 at enrollment and every 60 days. Complete home hazard assessment. If moderate/high risk, refer to OT for home modifications, PT for exercise program, social work for caregiver support. Educate Veteran and family on emergency response plan."]
+};
+const MORSE = [
+  {k:"hist",t:"1. History of falling (immediately or within 3 months)",o:[["no","No",0],["yes","Yes",25]]},
+  {k:"sec",t:"2. Secondary diagnosis",o:[["no","No",0],["yes","Yes",15]]},
+  {k:"aid",t:"3. Ambulatory aid",o:[["none","None / bed rest / nurse assist",0],["cane","Crutches / cane / walker",15],["furn","Furniture",30]]},
+  {k:"iv",t:"4. IV / heparin lock",o:[["no","No",0],["yes","Yes",20]]},
+  {k:"gait",t:"5. Gait / transferring",o:[["normal","Normal / bed rest / immobile",0],["weak","Weak",10],["impaired","Impaired",20]]},
+  {k:"mental",t:"6. Mental status",o:[["oriented","Oriented to own ability",0],["forgets","Forgets limitations",15]]}
+];
+const ABCS = {
+  A:{name:"A - Advanced age",crit:[["age85","Age 85 or older"],["frail","Frail due to clinical condition"]],
+     iv:["Floor mats (when resting)","Height-adjustable bed (low when resting, raised for transfers)","Medication review","Braden Scale and skin injury prevention interventions"]},
+  B:{name:"B - Bone disease",crit:[["osteo","Severe osteoporosis"],["mets","Metastatic bone cancer"],["fx","Prior bone fracture"],["vitd","Vitamin D deficiency"],["steroid","Prolonged steroid use"]],
+     iv:["Hip protectors offered; use documented","Vitamin D supplement (per provider)","Height-adjustable bed","Floor mats","Self-locking wheelchair"]},
+  C:{name:"C - Coagulation",crit:[["bleed","Bleeding disorder"],["anticoag","Anticoagulant use"],["inr","INR 3.0 or higher"],["plt","Platelets 50,000/mcL or less"]],
+     iv:["Anticoagulation risk vs. benefit discussed with provider","Padded hat or helmet considered","Wheelchair anti-tippers","Self-locking wheelchair","Heightened post-fall neurological surveillance flagged if a fall occurs"]},
+  S:{name:"S - Surgery",crit:[["amput","Recent lower limb amputation"],["abd","Recent abdominal or thoracic surgery"]],
+     iv:["Post-op education","Increased rounding frequency","Offer toileting before pain medication"]}
+};
+const MSST_Q = [
+  {k:"walk",t:"Is the patient currently walking independently without assistance or support and with good safety awareness?",note:"Yes = Level 4"},
+  {k:"avail",t:"Was the patient available for screening?",note:"No = Level 0"},
+  {k:"sit",t:"SIT and SHAKE: Is the patient able to sit unsupported while they reach out across their body to shake your hand? (If lying, may use bedrail or surface functions to assist; if seated, must sit unsupported.)",note:"No = Level 1"},
+  {k:"stretch",t:"STRETCH and POINT: Is the patient able to stretch and point at least one lower extremity?",note:"No = Level 2"},
+  {k:"stand",t:"STAND: Is the patient able to stand up and keep standing without sway or faltering for at least 5 seconds? (May hold on to some support: cane, walker, bedrail, stand aid.)",note:"No = Level 3P (Powered)"},
+  {k:"marchS",t:"MARCH and STEP WITH SUPPORT: Is the patient able to march in place and step forward and back with each foot while holding on to some support (cane, walker, bedrail, stand aid)?",note:"No = Level 3N (Non-powered)"},
+  {k:"marchN",t:"MARCH and STEP WITHOUT SUPPORT: Is the patient able to march in place and step forward and back with each foot without support, appearing to have good balance? (If the patient uses a cane or walker and appears steady with good balance, rate Level 4A.)",note:"No = Level 4A (Adaptive); Yes = Level 4"}
+];
+const MSST_LEVELS = {
+  "0":{n:"Level 0",d:"Not available for screening",eq:[]},
+  "1":{n:"Level 1",d:"Cannot sit unsupported",eq:["Ceiling lift","Floor-based total body lift","Lateral transfer devices","Multi-function vertical tilt beds","Specialty beds","Electric chair-stretchers"],tips:"Ceiling lift"},
+  "2":{n:"Level 2",d:"Sits unsupported but cannot stretch and point a lower extremity",eq:["Powered sit-to-stand lift","Powered shower chairs","Lateral transfer devices","Multi-function vertical tilt bed","Ceiling or floor-based total body lift"],tips:"Ceiling lift"},
+  "3P":{n:"Level 3P (Powered)",d:"Cannot stand 5 seconds without sway or faltering",eq:["Powered sit-to-stand lift","Powered toilet lift with sit-to-stand assist","Ceiling or floor-based total body lift","Specialized ambulation equipment","Multi-function vertical tilt beds"],tips:"Powered sit to stand"},
+  "3N":{n:"Level 3N (Non-powered)",d:"Cannot march and step with support",eq:["Non-powered raising/stand aid","Full body lift with ambulation harness"],tips:"Non powered stand aid"},
+  "4A":{n:"Level 4A (Adaptive)",d:"Steps with support or device but not without support",eq:["Walker, cane, crutches, etc."],tips:""},
+  "4":{n:"Level 4",d:"Independent",eq:["No equipment needed"],tips:""}
+};
+const UNIV_INPT = ["Orient Veteran to environment (call light, bathroom, bed controls)","Demonstrate call light use and keep it within reach","Bed in lowest locked position when resting; raised for transfers","Bed brakes and wheelchair locks engaged when stationary","Non-slip, well-fitting footwear when out of bed","Night lights / supplemental lighting, especially in bathroom","Clean, dry, uncluttered floors; prompt spill cleanup","Clear pathways to bathroom and around bed (two-foot clear path)","Sturdy handrails in bathrooms, rooms and hallways","Personal items and mobility aids within safe reach","Medication review completed and documented","Sensory aids (glasses, hearing aids) accessible during mobility","MSST level documented; required equipment confirmed at bedside before any transfer","MFS risk level, MSST level and TIPS content communicated at shift handoff","Safe Patient Handling and Mobility (SPHM) practices followed"];
+const UNIV_CLC = ["Bed in lowest functional position; wheels locked when not in active clinical use","Call light within reach; use demonstrated to Veteran and family","Personal items within arm's reach; non-slip footwear in use during all mobility","Adequate lighting; nightlight or call light visible at night","Two-foot clear path to bathroom; floors clean, dry, free of clutter","Medication review completed and documented; sensory aids accessible during mobility","MSST level documented; MFS/MSST communicated at shift handoff","Nighttime pathway lighting from bed to bathroom confirmed each shift","Wheelchair anti-tip devices installed; self-locking brakes functional"];
+const IV_ACUTE = {
+  low:["TIPS tip sheet generated, posted, and reviewed with Veteran and family","MSST level documented; equipment confirmed at bedside","Fall risk level documented in care plan and communicated to care team","Veteran and family educated on general fall prevention and 'Call, Don't Fall'","Reassess MFS every 24 hours and with any condition change; update tip sheet"],
+  moderate:["TIPS tip sheet updated to reflect moderate-risk interventions","Visual indicator of fall risk (colored wristband, door/bed signage)","Fall mats","Scheduled toileting offered every 2 hours (day/evening); overnight offer documented","Bed closest to nursing station when available","Pharmacist medication review initiated","PT/OT consult if gait, transfer or mobility impairment identified (MSST Level 4A or below)","Veteran and family educated on specific risk factors and safe transfers per MSST level"],
+  high:["TIPS tip sheet updated; all care team members briefed including MSST level and required equipment","Bed/chair alarm activated and functioning; Veteran and family educated on its purpose","Toileting every 1-2 hours; toileting worksheet initiated","Low bed activated","Perimeter/crash mat if at risk for rolling or unsupported standing","Safety companion or continuous visual monitoring considered for cognitively impaired Veteran with repeated unsafe ambulation","PT/OT assessment of transfer technique, mobility aids and strength","IDT review within 24 hours; MSST level confirmed at IDT","Helmet referral considered for head-impact fall history, anticoagulation, or severe seizure disorder","TIPS tip sheet and care plan updated at least every shift; MFS and MSST reassessed after every fall"]
+};
+const IV_CLC = {
+  low:["Veteran-centered Fall Prevention care plan developed and reviewed with Veteran/family","MSST level confirmed; equipment updated if mobility changed","Fall risk door/bed signage in a way that supports a home-like environment","Non-skid bedside mat, if appropriate","Pharmacist medication review completed and documented","PT/OT consult for gait, transfer or mobility impairment","CLC Restorative Nursing Care Program","Care plan reviewed regularly (in addition to quarterly MDS-linked reassessment)"],
+  moderate:["Scheduled toileting every 2 hours (day/evening); overnight offer documented"],
+  high:["Low bed activated; perimeter/crash mat placed","Hip protectors offered; use documented and monitored","Toileting every 1-2 hours (day); overnight offer documented","IDT review of high-risk designation (or following any fall)","Osteoporosis screening documented; vitamin D and calcium adequacy assessed","MSST level and care plan reviewed and updated at least weekly and after every fall"]
+};
+const CLC_FACTORS = [
+  ["cog","Cognitive impairment / impulsivity","Consistent staffing; hourly safety checks; reorientation cues; bed/chair alarm; activity programming; family as safety partners"],
+  ["elim","Altered elimination / nocturia","Prompted voiding every 2 hours; bedside commode; nighttime pathway lighting; evaluate treatable causes (UTI, BPH, medication effect)"],
+  ["weak","Muscle weakness / deconditioning","PT/OT progressive strengthening; supervised ambulation; assistive device fitted; MSST reassessment as strength improves"],
+  ["dizz","Dizziness / orthostatic hypotension","Orthostatic vital signs; sit-before-stand instruction posted; medication review; hydration assessment; vestibular rehab if indicated"],
+  ["poly","Polypharmacy","Quarterly pharmacist review; de-prescribing where appropriate; Veteran/family medication education"],
+  ["dep","Depression","Behavioral health referral; structured therapeutic activities; monitor medication side effects"],
+  ["vis","Poor vision","Annual optometry; glasses accessible and in use during all mobility; adequate contrast lighting"],
+  ["fear","Fear of falling","Rehab-led balance training; individualized mobility plan; psychosocial support"],
+  ["osteo","Osteoporosis risk","Provider review; vitamin D at least 800 IU daily if at risk; hip protectors offered and use documented"],
+  ["func","Functional mobility change","Update MSST level in EHR and care plan; confirm equipment at bedside; notify staff at next handoff; PT/OT referral"]
+];
+const IV_AMB = {
+  low:["Annual fall risk screening","Education: fall prevention strategies, medication awareness, footwear safety","Encourage physical activity: walking program, community balance/exercise classes"],
+  moderate:["Complete all three STEADI performance tests","Assess orthostatic BP, vision, footwear, home hazards, vitamin D and comorbidities","Individualized care plan documenting risk factors and interventions","Refer to PT for gait and balance assessment; OT for home safety assessment as indicated","Refer to community fall prevention program (Matter of Balance, Tai Chi: Moving for Better Balance, Otago)"],
+  high:["Comprehensive multifactorial fall risk assessment completed and documented","Multidisciplinary referrals: PT, OT, pharmacy, optometry, audiology, cardiology (if syncope/arrhythmia)","Provider/pharmacist review of high-risk medications; initiate de-prescribing as appropriate","Vitamin D supplementation if serum level deficient","Urgent PT referral for individualized exercise and balance program","OT home assessment and HISA referral for structural modifications","Emergency response plan confirmed; consider personal emergency response system","High fall risk AND frailty: consider HBPC enrollment"]
+};
+const IV_HBPC = {
+  low:["Educate Veteran/caregiver; reassess at next scheduled visit","Home hazard assessment completed","Veteran and family educated on emergency response plan"],
+  moderate:["Gait and balance assessment","Environmental modifications"],
+  high:["Full multifactorial assessment and referral","Priority OT home modification plan; coordinate with VA home modification benefit if applicable","Vitamin D lab assessment; supplement per guidelines if deficient","Personal Emergency Response System referral; educate on how to summon help","Hip protector assessment for Veterans with high fracture risk","Social work referral: caregiver burden, isolation, community resource linkage","Mental health screen: depression and fear of falling","Increase HBPC visit frequency as clinically indicated"]
+};
+const EDU_INPT = ["Personal fall risk factors","How and when to use the call system: Call, Don't Fall","Safe footwear and assistive device use","Medication side effects that increase fall risk","Safe mobility techniques: grab bars, rising slowly, assistive devices","Importance of reporting near falls immediately"];
+const EDU_AMB = ["Fall prevention strategies","Medication awareness","Footwear safety","Physical activity / balance programs","What to do after a fall (especially if on blood thinners)"];
+const EDU_HBPC = ["Emergency response plan and how to summon help","Home hazards and modifications","Medication awareness","Footwear safety","Caregiver role in fall prevention"];
+const MAHC = [
+ ["age","Age 65 or older"],["dx","Diagnosis: 3 or more co-existing documented medical diagnoses"],["prior","Prior history of falls within 3 months"],
+ ["incont","Incontinence (inability to make it to the bathroom or commode in timely manner; frequency, urgency, nocturia)"],
+ ["vis","Visual impairment (e.g., macular degeneration, field loss, decline in acuity, not wearing prescribed glasses)"],
+ ["mob","Impaired functional mobility (needs help with IADLs/ADLs, gait or transfer problems, arthritis, pain, foot problems, improper use of assistive devices)"],
+ ["env","Environmental hazards (poor lighting, equipment tubing, inappropriate footwear, pets, items hard to reach, uneven/cluttered floors)"],
+ ["poly","Poly pharmacy: 4 or more prescriptions (any type, including OTC)"],["pain","Pain affecting level of function"],["cog","Cognitive impairment (dementia, confusion, poor judgment, impulsivity, memory deficits)"]
+];
+const CHAIR = {F:[[60,64,12],[65,69,11],[70,74,10],[75,79,10],[80,84,9],[85,89,8],[90,94,4]],M:[[60,64,14],[65,69,12],[70,74,12],[75,79,11],[80,84,10],[85,89,8],[90,94,7]]};
+const FALLCHECK = [["still","Veteran not moved until a licensed clinical staff member assessed for injury"],["h2t","Focused head-to-toe assessment completed (neuro, musculoskeletal, skin)"],["ortho","Orthostatic vital signs obtained (lying, sitting, standing)"],["msstre","MSST rescreened before moving; SPHM lift equipment used (no manual lift)"],["charge","Charge nurse notified"],["meds","Medications given in the hours before the fall reviewed"],["pharm","Pharmacy fall consult requested"],["pt","Physical therapy consult requested"],["plan","Care plan updated with revised individualized interventions"]];
+
+/* ============================ STATE ============================ */
+let curGroups=[]; let S, step = 1, noteEdited = false, noteText = "";
+function newState(){return {setting:"",etype:"",dt:nowStr(),unit:"",assessor:"",rep90:false,
+  morse:{},mo:{level:"",why:""},abcs:{done:false,A:{},B:{},C:{},S:{}},msst:{},msstManual:"",
+  tips:{room:"",pname:"",inotes:"",touched:false,posted:false,med:false,comm:false,ivassist:false,alarm:false,aid:"",hrs:"",tmethod:"",transfer:""},
+  icu:{delirium:""},mh:{lig:false},
+  st:{fallen:"",count:"",injured:"",unsteady:"",worry:"",tug:"",chair:"",age:"",sex:"",bal:"",sysL:"",sysS:"",meds:"",vis:false,cog:false,feet:false,vitd:false,home:false},
+  mahc:{},clc:{plan:false,idt:false,fam:false,mds:false,f:{}},
+  act:{},uni:{},iv:{},edu:{},teach:"",who:"",comments:"",showNot:false,
+  fall:{dt:nowStr(),loc:"",locx:"",wit:"",what:"",head:"",inj:"",provider:"",ptime:"",fam:"",bp:"",chk:{}}};}
+function nowStr(){const d=new Date(),p=n=>String(n).padStart(2,"0");return p(d.getMonth()+1)+"/"+p(d.getDate())+"/"+d.getFullYear()+" "+p(d.getHours())+":"+p(d.getMinutes());}
+function getP(path){return path.split(".").reduce((o,k)=>o==null?o:o[k],S);}
+function setP(path,v){const ks=path.split(".");let o=S;for(let i=0;i<ks.length-1;i++){if(o[ks[i]]==null)o[ks[i]]={};o=o[ks[i]];}o[ks[ks.length-1]]=v;}
+const esc=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"").slice(0,40);
+
+/* ============================ HELPERS ============================ */
+function rg(path,opts){const cur=getP(path);return '<div class="rg" role="radiogroup">'+opts.map(o=>'<label class="pill"><input type="radio" name="'+path+'" data-k="'+path+'" value="'+esc(o[0])+'"'+(cur===o[0]?" checked":"")+'> '+esc(o[1])+(o[2]!=null?' <small>('+o[2]+')</small>':"")+'</label>').join("")+"</div>";}
+function cb(path,label,hint){return '<label class="cbl"><input type="checkbox" data-k="'+path+'"'+(getP(path)?" checked":"")+'><span>'+esc(label)+(hint?' <small class="m">'+esc(hint)+"</small>":"")+"</span></label>";}
+function txt(path,label,ph,type){return '<div><label class="f">'+esc(label)+'</label><input type="'+(type||"text")+'" data-k="'+path+'" value="'+esc(getP(path)||"")+'" placeholder="'+esc(ph||"")+'"></div>';}
+function sel(path,label,opts){const cur=getP(path)||"";return '<div><label class="f">'+esc(label)+'</label><select data-k="'+path+'"><option value="">Select...</option>'+opts.map(o=>{const v=Array.isArray(o)?o[0]:o,l=Array.isArray(o)?o[1]:o;return '<option value="'+esc(v)+'"'+(cur===v?" selected":"")+">"+esc(l)+"</option>";}).join("")+"</select></div>";}
+const isInpt=()=>["acute","icu","mh"].includes(S.setting);
+const levelName=l=>l?l.toUpperCase():"";
+
+/* ============================ COMPUTATIONS ============================ */
+function morseCalc(){let s=0,n=0;for(const q of MORSE){const v=S.morse[q.k];if(v!=null&&v!==""){const o=q.o.find(x=>x[0]===v);if(o){s+=o[2];n++;}}}
+  const complete=n===MORSE.length;const lvl=!complete?null:(s>=45?"high":s>=25?"moderate":"low");
+  const eff=S.mo.level||lvl;return {score:s,complete,level:lvl,eff:complete?eff:null,overridden:complete&&S.mo.level&&S.mo.level!==lvl};}
+function abcsCalc(){const pos=[];for(const L of Object.keys(ABCS)){const any=ABCS[L].crit.filter(c=>S.abcs[L][c[0]]).map(c=>c[1]);if(any.length)pos.push({L,items:any});}
+  return {pos,complete:pos.length>0||S.abcs.done};}
+function msstCalc(){if(S.msstManual)return S.msstManual;const a=S.msst;if(a.walk==="Y")return "4";if(a.walk!=="N")return null;
+  if(a.avail==="N")return "0";if(a.avail!=="Y")return null;if(a.sit==="N")return "1";if(a.sit!=="Y")return null;
+  if(a.stretch==="N")return "2";if(a.stretch!=="Y")return null;if(a.stand==="N")return "3P";if(a.stand!=="Y")return null;
+  if(a.marchS==="N")return "3N";if(a.marchS!=="Y")return null;if(a.marchN==="N")return "4A";if(a.marchN==="Y")return "4";return null;}
+function tipsRisks(){const m=S.morse,r=[];if(m.hist==="yes")r.push("History of Falls");if(S.tips.med)r.push("Medication Side Effects");if(m.aid&&m.aid!=="none")r.push("Mobility Aids");if(m.iv==="yes")r.push("IV Pole or Equipment");if(m.gait==="weak"||m.gait==="impaired")r.push("Unsteady Walk");if(m.mental==="forgets")r.push("May Forget or Choose Not to Call");return r;}
+function steadiCalc(){const s=S.st;if(!s.fallen||!s.unsteady||!s.worry)return {complete:false};
+  const cnt=s.fallen==="Y"?(s.count||""):"0";if(s.fallen==="Y"&&(!cnt||!s.injured))return {complete:false};
+  let lvl;const n=cnt==="2+"?2:Number(cnt||0);
+  if(n>=2||(n===1&&s.injured==="Y")||s.unsteady==="Y"||s.worry==="Y")lvl="high";else if(n===1)lvl="moderate";else lvl="low";
+  return {complete:true,level:lvl,positive:lvl!=="low"};}
+function chairCutoff(){const s=S.st;const a=Number(s.age);if(!a||!s.sex)return null;const row=CHAIR[s.sex].find(r=>a>=r[0]&&a<=r[1]);return row?row[2]:null;}
+function steadiTests(){const s=S.st;const out={};
+  if(s.tug!=="")out.tug={v:s.tug,hi:Number(s.tug)>=12};
+  const c=chairCutoff();if(s.chair!==""){out.chair={v:s.chair,cut:c,hi:c==null?null:Number(s.chair)<c};}
+  if(s.bal!=="")out.bal={v:s.bal,hi:Number(s.bal)<10};
+  if(s.sysL!==""&&s.sysS!==""){const d=Number(s.sysL)-Number(s.sysS);out.orth={d,hi:d>=20};}
+  if(s.meds!=="")out.meds={v:s.meds,hi:Number(s.meds)>=4};
+  out.complete=out.tug&&out.chair&&out.bal;return out;}
+function mahcCalc(){const n=MAHC.filter(m=>S.mahc[m[0]]===true).length;
+  return {score:n,complete:S.mahc.rev===true,level:n>=6?"high":n>=4?"moderate":"low",answered:n};}
+function overallLevel(){const st=S.setting;if(["acute","icu","mh","clc"].includes(st))return morseCalc().eff;if(st==="amb"){const c=steadiCalc();return c.complete?c.level:null;}if(st==="hbpc"){const c=mahcCalc();return c.complete?c.level:null;}return null;}
+function toolDone(k){switch(k){case"morse":return morseCalc().complete;case"abcs":return abcsCalc().complete;case"msst":return !!msstCalc();
+  case"tips":return !!S.tips.posted;case"clcplan":return !!S.clc.plan;case"delirium":return !!S.icu.delirium;
+  case"steadi":return steadiCalc().complete;case"steaditests":{const c=steadiCalc();if(!c.complete)return false;if(!c.positive)return true;return !!steadiTests().complete;}case"mahc":return mahcCalc().complete;}return false;}
+
+/* ============================ INTERVENTIONS ============================ */
+function buildIv(){const g=[],lvl=overallLevel(),st=S.setting;const add=(title,arr,pre)=>{if(arr.length)g.push({title,items:arr.map(t=>({id:(pre||slug(title))+"_"+slug(t),t}))});};
+  const tiers=(src,lv)=>{const out=[];add("Low-risk interventions (all Veterans)",src.low,"lo");if(lv==="moderate"||lv==="high")add("Added for moderate risk",src.moderate,"mo");if(lv==="high"){const hi=src.high.slice();add("Added for high risk",hi,"hi");}};
+  if(["acute","icu","mh"].includes(st)){add("Universal fall precautions (every Veteran)",UNIV_INPT,"un");if(lvl){tiers(IV_ACUTE,lvl);if(lvl==="high"&&S.rep90)add("Repeat faller",["Falls Response Team notified (2 or more falls in 90 days)"],"rf");}
+    if(st==="icu")add("ICU additions",["Delirium screened each shift per facility protocol","TIPS sheet updated at each critical transition (ventilator weaning, sedation reduction, step-down)","MSST level and equipment confirmed before each mobility task"],"icu");
+    if(st==="mh")add("Mental health unit additions",["Fall precautions are MHEOCC-compliant (VHA Directive 1167); alternatives or approved mitigation plan in place","Pharmacy review for psychotropic side effects initiated","Safety Office coordinated for equipment adaptations"],"mh");}
+  if(st==="clc"){add("Universal fall precautions (CLC)",UNIV_CLC,"un");if(lvl){tiers(IV_CLC,lvl);if(lvl==="high"&&S.rep90)add("Repeat faller",["Falls Response Team notified when available (2 or more falls in 90 days)"],"rf");}
+    const fs=CLC_FACTORS.filter(f=>S.clc.f[f[0]]);if(fs.length)g.push({title:"Interventions for identified CLC risk factors",items:fs.map(f=>({id:"clcf_"+f[0],t:f[1]+": "+f[2]}))});}
+  if(st==="amb"&&lvl)tiers(IV_AMB,lvl);
+  if(st==="hbpc"&&lvl)tiers(IV_HBPC,lvl);
+  const a=abcsCalc();if(a.pos.length&&["acute","icu","mh","clc"].includes(st)){a.pos.forEach(p=>add("ABCS "+ABCS[p.L].name,ABCS[p.L].iv,"ab"+p.L));}
+  return g;}
+function ivStatus(){const groups=buildIv();const inP=[],notP=[];groups.forEach(gr=>gr.items.forEach(it=>{(S.iv[it.id]||S.uni[it.id]?inP:notP).push({g:gr.title,t:it.t});}));return {groups,inP,notP};}
+
+/* ============================ RENDER ============================ */
+const STEPS=[["1","Encounter","Setting and type"],["2","Assessments","Risk tools"],["3","Actions","Interventions"],["4","Note","Review and copy"]];
+function renderSteps(){$("#steps").innerHTML=STEPS.map((s,i)=>'<button data-step="'+(i+1)+'" class="'+(step===i+1?"on":"")+'">'+s[0]+". "+s[1]+"<span>"+s[2]+"</span></button>").join("");}
+const $=q=>document.querySelector(q);
+function renderSummary(){const st=S.setting;if(!st){$("#summary").innerHTML='<span class="chip">Choose a care setting to begin</span>';return;}
+  let h='<span class="chip"><b>Setting</b>'+esc(SETTINGS[st].name)+"</span>";
+  const lv=overallLevel();h+='<span class="chip '+(lv||"")+'"><b>Fall risk</b>'+(lv?levelName(lv):"not yet scored")+"</span>";
+  if(SETTINGS[st].tools.includes("morse")){const m=morseCalc();h+='<span class="chip"><b>Morse</b>'+(m.complete?m.score:"incomplete")+"</span>";}
+  if(SETTINGS[st].tools.includes("abcs")){const a=abcsCalc();h+='<span class="chip"><b>ABCS</b>'+(a.complete?(a.pos.length?a.pos.map(p=>p.L).join(", "):"none"):"incomplete")+"</span>";}
+  if(SETTINGS[st].tools.includes("msst")){const m=msstCalc();h+='<span class="chip"><b>MSST</b>'+(m?MSST_LEVELS[m].n:"incomplete")+"</span>";}
+  $("#summary").innerHTML=h;}
+function render(){renderSteps();renderSummary();const p=$("#panel");
+  if(step===1)p.innerHTML=viewEncounter();else if(step===2)p.innerHTML=viewAssess();else if(step===3)p.innerHTML=viewActions();else p.innerHTML=viewNote();
+  if(step===2){renderMSST();refreshDyn();}if(step===3)refreshActionsDyn();if(step===4)buildNote();}
+function nav(prev,next){return '<div class="row">'+(prev?'<button class="btn sec" data-go="'+prev+'">Back</button>':"")+(next?'<button class="btn" data-go="'+next+'">Next</button>':"")+"</div>";}
+
+function viewEncounter(){let h='<div class="card"><h2>Where is this screening taking place?</h2><div class="hint">The bundle sets different tools for each care setting.</div><div class="big">';
+  for(const k of Object.keys(SETTINGS))h+='<label class="sc"><input type="radio" name="setting" data-k="setting" value="'+k+'"'+(S.setting===k?" checked":"")+"><b>"+esc(SETTINGS[k].name)+"</b><span>"+esc(TABLE_ROWS[k][0])+"</span></label>";
+  h+="</div></div>";
+  if(S.setting){const st=SETTINGS[S.setting];
+    h+='<div class="card"><h2>Encounter details</h2><label class="f">Reason for screening</label>'+rg("etype",st.types.map(t=>[t,t]))+'<div class="grid">'+txt("dt","Date / time","MM/DD/YYYY HH:MM")+txt("unit","Unit / clinic (optional)","e.g., PINE")+txt("assessor","Your name and credentials (optional)","e.g., Jane Doe, RN")+"</div>";
+    h+=cb("rep90","Two or more falls in the past 90 days","(repeat faller; triggers Falls Response Team step for high risk)")+"</div>";
+    h+='<div class="card"><h2>What the bundle requires here</h2><table class="qa"><tr><th style="width:28%">Risk tools</th><th>Quick action on admission / encounter</th></tr><tr><td>'+esc(TABLE_ROWS[S.setting][0])+"</td><td>"+esc(TABLE_ROWS[S.setting][1])+"</td></tr></table>";
+    h+='<div class="info"><b>Reassessment:</b> '+esc(st.reassess)+"</div></div>";}
+  return h+nav(null,S.setting?2:null);}
+
+function viewAssess(){if(!S.setting)return '<div class="card">Go back and choose a care setting first.</div>'+nav(1,null);
+  const st=SETTINGS[S.setting];let h="";
+  if(st.tools.includes("morse")){h+='<div class="card"><h2>Morse Fall Scale (MFS)</h2><div class="hint">How likely is this Veteran to fall? Nurses may override the score and document the reason.</div><button class="btn sec q2" data-act="morse0">One click: set all six to normal (score 0), then change what applies</button>';
+    for(const q of MORSE)h+='<div class="mrow"><div class="t">'+q.t+"</div>"+rg("morse."+q.k,q.o)+"</div>";
+    h+='<div id="morseRes"></div><div class="grid" id="morseOv" style="display:none">'+sel("mo.level","Clinical override of risk level (optional)",["low","moderate","high"])+txt("mo.why","Rationale for override","Required if overriding")+'</div><div id="morseOvAlert"></div></div>';}
+  if(S.setting==="icu")h+='<div class="card"><h2>Delirium screen (ICU)</h2><div class="hint">Per facility protocol, each shift.</div>'+rg("icu.delirium",[["Negative","Negative"],["Positive","Positive"],["Unable to assess","Unable to assess"],["Not done","Not done"]])+"</div>";
+  if(S.setting==="mh")h+='<div class="card"><h2>Mental health unit safety</h2>'+cb("mh.lig","Ligature-risk equipment modifications considered; precautions follow MHEOCC (VHA Directive 1167)")+"</div>";
+  if(st.tools.includes("abcs")){const clc=S.setting==="clc";h+='<div class="card"><h2>'+(clc?"Fall injury risk factors (ABCS)":"ABCS Fall Injury Risk Tool")+'</h2><div class="hint">If the Veteran falls, how serious will the injury be? Check everything that applies.</div><div class="grid">';
+    for(const L of Object.keys(ABCS))h+="<div><h3>"+ABCS[L].name+"</h3>"+ABCS[L].crit.map(c=>cb("abcs."+L+"."+c[0],c[1])).join("")+"</div>";
+    h+='</div><button class="btn sec q2" data-act="abcs0">None apply (one click)</button><div id="abcsRes"></div></div>';}
+  if(st.tools.includes("msst"))h+='<div class="card"><h2>VA Mobility Screening and Solutions Tool (MSST)</h2><div class="hint">What type of mobility activity can this Veteran do safely, and what equipment is needed? Answer the questions in order. Always default to the safest choice.</div><div id="msstBox"></div></div>';
+  if(st.tools.includes("tips"))h+=viewTips();
+  if(st.tools.includes("clcplan"))h+=viewClcPlan();
+  if(st.tools.includes("steadi"))h+=viewSteadi();
+  if(st.tools.includes("mahc"))h+=viewMahc();
+  if(S.etype&&/fall/i.test(S.etype))h+=viewFall();
+  return h+nav(1,3);}
+
+function tipsSuggest(){const m=S.morse,lvl=overallLevel(),ms=msstCalc();return {comm:m.hist==="yes",ivassist:m.iv==="yes",alarm:lvl==="high",aid:m.aid==="none"?"None":"",hrs:lvl==="high"?"1 hour":lvl==="moderate"?"2 hours":"",transfer:(ms&&MSST_LEVELS[ms].tips)||""};}
+function syncTipsDom(){document.querySelectorAll('[data-k^="tips."]').forEach(el=>{const k=el.dataset.k.slice(5);if(["posted","med","touched"].includes(k))return;const v=S.tips[k];if(el.type==="checkbox")el.checked=!!v;else el.value=v||"";});}
+function applyTips(){if(S.tips.touched)return;Object.assign(S.tips,tipsSuggest());syncTipsDom();}
+function tipsSheetHtml(){const t=S.tips,r=tipsRisks(),lvl=overallLevel(),ms=msstCalc(),a=abcsCalc();
+  const R=[["History of Falls","#d9534f"],["Medication Side Effects","#e0b000"],["Mobility Aids","#2f7fc1"],["IV Pole or Equipment","#3a9a3a"],["Unsteady Walk","#e8820c"],["May Forget or Choose Not to Call","#8e44ad"]];
+  const on=(c,x)=>'<span class="to'+(c?" on":"")+'">'+(c?"&#10003; ":"")+x+"</span>";
+  const rk=R.map(x=>'<div class="rk"><span class="bx" style="border-color:'+x[1]+';color:'+x[1]+'">'+(r.includes(x[0])?"&#10003;":"")+"</span>"+esc(x[0])+"</div>").join("");
+  const hrs=t.hrs?t.hrs.replace(/ hours?/,""):"____";
+  let h='<div class="tips"><h1>FALL TIPS <small>Tailored Interventions for Patient Safety | Date/time: '+esc(S.dt)+" | Unit: "+esc(S.unit||"____")+' | Room/bed: <span id="tipsRoomOut">'+esc(t.room||"____")+'</span> | Preferred name: <span id="tipsNameOut">'+esc(t.pname||"____")+'</span></small></h1>';
+  h+='<div class="tcols"><div class="tcol"><h2>Fall Risks (check all that apply)</h2>'+rk+'</div><div class="tcol"><h2>Fall Interventions (selected items are outlined and checked)</h2><div class="tg">';
+  h+='<div class="tp" style="background:#fbdcdc"><h3>Communicate recent fall and/or risk of harm</h3>'+on(t.comm,"Yes")+"</div>";
+  h+='<div class="tp" style="background:#dff0d8"><h3>IV assistance when walking</h3>'+on(t.ivassist,"Yes")+"</div>";
+  h+='<div class="tp" style="background:#ead9f3"><h3>Bed alarm</h3>'+on(t.alarm,"ON")+"</div>";
+  h+='<div class="tp" style="background:#d9e8f7"><h3>Mobility aids</h3>'+on(t.aid==="Walker/Rollator","Walker / Rollator")+on(t.aid==="Wheelchair","W/C")+on(t.aid==="Crutches/Cane","Crutches / Cane")+"</div>";
+  h+='<div class="tp wide" style="background:#e8f5dd"><h3>Toileting schedule: every <u>&nbsp;'+esc(hrs)+'&nbsp;</u> hour(s)</h3>'+on(t.tmethod==="Bed pan","Bed pan")+on(t.tmethod==="Assist to commode","Assist to commode")+on(t.tmethod==="Assist to bathroom","Assist to bathroom")+"</div>";
+  h+='<div class="tp wide" style="background:#fde7cc"><h3>Transfer assistance</h3>'+on(t.transfer==="Bed rest","Bed rest")+on(t.transfer==="Non powered stand aid","Non powered stand aid")+on(t.transfer==="Powered sit to stand","Powered sit to stand")+on(t.transfer==="Ceiling lift","Ceiling lift")+"</div>";
+  h+="</div></div></div>";
+  h+='<div class="tinfo"><div><b>Fall risk level (Morse):</b> '+(lvl?levelName(lvl):"not scored")+(morseCalc().complete?" ("+morseCalc().score+")":"")+"</div><div><b>Mobility level (MSST):</b> "+(ms?esc(MSST_LEVELS[ms].n):"not screened")+"</div><div><b>Injury risk (ABCS):</b> "+(a.complete?(a.pos.length?a.pos.map(p=>p.L).join(", "):"none"):"not assessed")+"</div></div>";
+  if(ms&&MSST_LEVELS[ms].eq.length)h+='<div class="tinfo"><div style="grid-column:1/-1"><b>MSST equipment suggestions:</b> '+esc(MSST_LEVELS[ms].eq.join("; "))+"</div></div>";
+  if(ms==="4A"&&lvl==="high")h+='<div class="tinfo"><div style="grid-column:1/-1;border-color:#b50909"><b>Supervise during all mobility</b> (MSST Level 4A with high fall risk).</div></div>';
+  h+='<div class="tinfo"><div style="grid-column:1/-1;min-height:46px"><b>Individual notes:</b> <span id="tipsNotesOut">'+esc(t.inotes||"")+"</span></div></div>";
+  h+='<div class="tinfo"><div style="grid-column:1/-1;font-size:15px"><b>Call, Don\'t Fall.</b> Ask for help before getting up.</div></div>';
+  h+='</div>';
+  return h;}
+function openTips(){let m=$("#tipsModal");if(!m){m=document.createElement("div");m.id="tipsModal";document.body.appendChild(m);}
+  m.innerHTML='<div class="sheetwrap"><div class="bar"><button class="btn" data-act="tipsdoprint">Print TIPS sheet</button><button class="btn sec" data-act="tipsclose">Close</button></div><div class="grid" style="margin-bottom:8px"><div><label class="f">Room/bed (optional)</label><input type="text" id="tipsRoom" maxlength="20" value="'+esc(S.tips.room)+'"></div><div><label class="f">Preferred name (optional)</label><input type="text" id="tipsName" maxlength="30" value="'+esc(S.tips.pname)+'" placeholder="First name or nickname only"></div><div style="grid-column:1/-1"><label class="f">Individual notes (optional, shown on the sheet)</label><textarea id="tipsNotes" rows="2" maxlength="220" style="font-family:Arial,sans-serif" placeholder="e.g., wears glasses and left hearing aid; needs cueing; gets up at night to void">'+esc(S.tips.inotes)+'</textarea></div></div><div class="hint noprint">Do not enter a full name, SSN, or other identifiers. Follow your facility policy on what may be posted at the bedside. The print button opens your print dialog (landscape, one page).</div>'+tipsSheetHtml()+"</div>";m.style.display="block";}
+function viewTips(){return '<div class="card"><h2>TIPS: Tailored Interventions for Patient Safety</h2><div class="hint">TIPS combines the three tools into a bedside tip sheet. Risks below fill in from the Morse answers. Use FallTips.org / your EHR template for the posted sheet; this summary goes in the note.</div><div id="tipsRisks"></div>'+cb("tips.posted","TIPS tip sheet generated and posted at bedside (reviewed with Veteran and family)")+cb("tips.med","Medication side effects (check if applicable)")+'<h3>Interventions for the tip sheet</h3>'+cb("tips.comm","Communicate recent fall and/or risk of harm")+cb("tips.ivassist","Assistance with IV pole/equipment when walking")+cb("tips.alarm","Bed alarm on")+'<div class="grid">'+sel("tips.aid","Mobility aid",["Walker/Rollator","Wheelchair","Crutches/Cane","None"])+sel("tips.hrs","Toileting schedule: every",["1 hour","2 hours","3 hours","4 hours"])+sel("tips.tmethod","Toileting method",["Bed pan","Assist to commode","Assist to bathroom"])+sel("tips.transfer","Transfer assistance",["Bed rest","Non powered stand aid","Powered sit to stand","Ceiling lift"])+'</div><div class="hint" id="tipsHint"></div><div class="row"><button class="btn sec q2" data-act="tipsreset">Re-apply suggestions</button><button class="btn q2" data-act="tipsprint">Preview / print TIPS sheet</button></div></div>';}
+function viewClcPlan(){return '<div class="card"><h2>Veteran-centered Fall Prevention Care Plan (CLC)</h2><div class="hint">Select the risk factors present. Matching interventions appear in the next step.</div>'+CLC_FACTORS.map(f=>cb("clc.f."+f[0],f[1])).join("")+"<h3>Care plan status</h3>"+cb("clc.plan","Veteran-centered Fall Prevention care plan developed or updated")+cb("clc.idt","Reviewed with IDT")+cb("clc.fam","Reviewed with Veteran/family")+cb("clc.mds","Updated with quarterly MDS")+"</div>";}
+function viewSteadi(){const s=S.st;let h='<div class="card"><h2>CDC STEADI screen (Stay Independent / three key questions)</h2><button class="btn sec q2" data-act="steadi0">One click: no falls, not unsteady, no worry</button>';
+  h+='<div class="q"><div class="t">Have you fallen in the past year?</div>'+rg("st.fallen",[["Y","Yes"],["N","No"]])+"</div>";
+  if(s.fallen==="Y")h+='<div class="q"><div class="t">How many times? Were you injured?</div>'+rg("st.count",[["1","1 fall"],["2+","2 or more"]])+rg("st.injured",[["Y","Injured"],["N","Not injured"]])+"</div>";
+  h+='<div class="q"><div class="t">Do you feel unsteady when standing or walking?</div>'+rg("st.unsteady",[["Y","Yes"],["N","No"]])+"</div>";
+  h+='<div class="q"><div class="t">Do you worry about falling?</div>'+rg("st.worry",[["Y","Yes"],["N","No"]])+"</div>";
+  h+='<div id="steadiRes"></div></div><div class="card" id="steadiTestsCard"></div>';return h;}
+function steadiTestsHtml(){const c=steadiCalc();if(!c.complete)return "<h2>STEADI performance tests</h2><div class=\"hint\">Complete the screen above first.</div>";
+  if(!c.positive)return "<h2>STEADI performance tests</h2><div class=\"hint\">Screen is negative. Tests are not required; educate and reassess annually.</div>";
+  const s=S.st;const cut=chairCutoff();
+  return "<h2>STEADI performance tests and clinical assessment</h2><div class=\"hint\">Administer all three performance tests for screen-positive Veterans.</div><div class=\"grid\">"+
+  txt("st.tug","Timed Up and Go (seconds)","e.g., 11.5","number")+txt("st.chair","30-Second Chair Stand (number of stands)","","number")+txt("st.age","Age (for chair stand cutoff)","","number")+sel("st.sex","Sex (for chair stand cutoff)",[["F","Female"],["M","Male"]])+txt("st.bal","4-Stage Balance: seconds holding tandem stance (max 10)","","number")+"</div>"+
+  '<div id="stTestRes"></div><h3>Additional clinical assessment</h3><div class="grid">'+txt("st.sysL","Systolic BP lying/sitting","mmHg","number")+txt("st.sysS","Systolic BP standing","mmHg","number")+txt("st.meds","Number of medications","fall-risk review; 4+ is a risk factor","number")+"</div>"+
+  cb("st.vis","Visual acuity screened")+cb("st.cog","Cognitive screen done (MoCA or MMSE)")+cb("st.feet","Foot and footwear assessment done")+cb("st.vitd","Vitamin D level checked")+cb("st.home","Home safety screen done");}
+function viewMahc(){let h='<div class="card"><h2>MAHC-10 Fall Risk Assessment (HBPC)</h2><div class="hint">Check each core element that applies (one point each). Unchecked means No. Information may come from the record, assessment, patient or caregiver; scoring should also reflect clinical judgment.</div>';
+  for(const m of MAHC)h+=cb("mahc."+m[0],m[1]);
+  return h+'<div style="border-top:1px solid var(--line);margin-top:6px;padding-top:6px">'+cb("mahc.rev","All 10 elements reviewed")+'</div><div id="mahcRes"></div></div>';}
+function viewFall(){const f=S.fall;let h='<div class="card" style="border-color:#e08a8a"><h2>Post-fall details</h2><div class="hint">Rescore the tools above after the fall. Document facts only.</div><div class="grid">'+txt("fall.dt","Date / time of fall")+sel("fall.loc","Location",["Patient room","Bathroom","Hallway","Common / dining area","Therapy area","Clinic / exam room","Home","Other"])+sel("fall.wit","Witnessed",["Witnessed","Unwitnessed","Unknown"])+sel("fall.head","Head strike",["Confirmed","Suspected","Unknown","No"])+txt("fall.what","What was the Veteran trying to do?","e.g., going to bathroom")+txt("fall.inj","Injuries found","e.g., none; 2 cm skin tear L forearm")+txt("fall.bp","Orthostatic BP/pulse","lying / sitting / standing")+txt("fall.provider","Provider notified (name)")+txt("fall.ptime","Time provider notified")+sel("fall.fam","Family / next of kin notified",["Yes","No","Not applicable"])+"</div><h3>Post-fall checklist</h3>"+FALLCHECK.map(c=>cb("fall.chk."+c[0],c[1])).join("")+'<div id="fallAlert"></div>'+
+  '<div class="info"><b>Do the following separately, not in this note:</b> complete the JPSR, initiate the post-fall huddle, and report inpatient/CLC falls to IPEC. Incident reports and RCAs are confidential under 38 U.S.C. 5705 and must not be placed in or referenced in the medical record.</div></div>';return h;}
+
+function viewActions(){if(!S.setting)return '<div class="card">Go back and choose a care setting first.</div>'+nav(1,null);
+  const st=SETTINGS[S.setting];let h='<div class="card"><h2>Required actions for this setting</h2><div class="hint">Items marked automatic update from your assessments. Tick the others when done.</div><div id="actList"></div></div><div id="ivBox"></div>';
+  const edu=isInpt()||S.setting==="clc"?EDU_INPT:S.setting==="amb"?EDU_AMB:EDU_HBPC;
+  h+='<div class="card"><h2>Education <button class="lnk" data-act="eduall">Select all topics</button></h2><div class="hint">One-on-one verbal instruction with teach-back; written materials at 8th-grade reading level or below in the Veteran\'s preferred language; include family/caregiver.</div>'+edu.map(t=>cb("edu."+slug(t),t)).join("")+'<div class="grid" style="margin-top:8px">'+sel("teach","Teach-back confirmed",["Yes","No","Veteran unable (cognitive impairment)"])+sel("who","Education given to",["Veteran","Veteran and family/caregiver","Family/caregiver only"])+"</div></div>";
+  h+='<div class="card"><h2>Additional comments (optional)</h2><textarea data-k="comments" rows="3" placeholder="Short clinical comment. No names or SSN.">'+esc(S.comments)+"</textarea>"+cb("showNot","Also list recommended items that are not yet in place in the note (makes the note longer)")+"</div>";
+  return h+nav(2,4);}
+function viewNote(){return '<div class="card"><h2>Review and copy</h2><div id="warn"></div><div class="hint">Plain text, wrapped at 78 characters for CPRS. Edit if needed, then copy and paste into your CPRS note while the correct patient is selected.</div><textarea id="noteBox" rows="28" spellcheck="false"></textarea><div class="row"><button class="btn" id="copyBtn">Copy note to clipboard</button><button class="btn sec" id="regen">Regenerate (discard edits)</button>'+(S.setting&&SETTINGS[S.setting].tools.includes("tips")?'<button class="btn sec" data-act="tipsprint">Preview / print TIPS sheet</button>':"")+'<button class="btn warn" id="reset">Start a new screening</button></div><div id="copyMsg" class="hint"></div></div>'+nav(3,null);}
+
+/* ---------- dynamic regions ---------- */
+function renderMSST(){const box=$("#msstBox");if(!box)return;const a=S.msst;const lv=msstCalc();let h='<div class="t">Pick the mobility level (one click)</div><div class="rg">'+Object.keys(MSST_LEVELS).map(k=>'<label class="pill" title="'+esc(MSST_LEVELS[k].d)+'"><input type="radio" name="msstLevel" data-k="msstManual" value="'+k+'"'+(lv===k?" checked":"")+"> "+esc(MSST_LEVELS[k].n)+"</label>").join("")+"</div>";
+  if(lv){const m=MSST_LEVELS[lv];h+='<div class="info"><b>'+esc(m.n)+":</b> "+esc(m.d)+'<br><b>Equipment suggestions</b> (always default to the safest choice): '+esc(m.eq.join("; "))+".</div>";
+    const mf=morseCalc();if(lv==="4A"&&mf.complete&&mf.eff==="high")h+='<div class="alert">MSST Level 4A with high fall risk (MFS 45 or higher): supervision is required during all mobility, even if the Veteran walks with a device.</div>';}
+  h+='<details'+(Object.keys(a).length?" open":"")+'><summary style="cursor:pointer;color:var(--blue);margin-top:6px"><b>Not sure? Use the 5-task screen to find the level</b></summary>';
+  for(let i=0;i<MSST_Q.length;i++){const q=MSST_Q[i];
+    h+='<div class="q"><div class="t">'+esc(q.t)+'</div><small class="m">'+esc(q.note)+"</small>"+rg("msst."+q.k,[["Y","Yes"],["N","No"]])+"</div>";
+    if(i===0){if(a.walk!=="N")break;}else if(a[q.k]!=="Y")break;}
+  h+="</details>";box.innerHTML=h;}
+function levelBadge(l){return l?'<span class="chip '+l+'"><b>'+levelName(l)+" RISK</b></span>":"";}
+function refreshDyn(){renderSummary();
+  const mr=$("#morseRes");if(mr){const m=morseCalc();let h="";if(!m.complete)h='<div class="hint">Answer all six items to calculate the score.</div>';else{h='<div class="info"><span class="score">'+m.score+"</span> "+levelBadge(m.level)+'<div class="hint">0-20 low | 25-44 moderate | 45 or higher high. Required response: '+(m.level==="low"?"Universal Fall Precautions":m.level==="moderate"?"Universal Fall Precautions + TIPS":"Universal Fall Precautions + TIPS + High Fall Risk Bundle")+'.</div></div>';}
+    mr.innerHTML=h;$("#morseOv").style.display=m.complete?"grid":"none";$("#morseOvAlert").innerHTML=m.overridden?'<div class="alert">Risk level overridden to '+levelName(m.eff)+". The rationale will be included in the note.</div>":"";}
+  const ar=$("#abcsRes");if(ar){const a=abcsCalc();ar.innerHTML=(!a.pos.length&&S.abcs.done)?'<div class="info">No ABCS injury risk factors present (reviewed).</div>':a.pos.length?'<div class="info"><b>Injury risk factors present: '+a.pos.map(p=>p.L).join(", ")+"</b>. Target interventions are listed in the next step."+(a.pos.some(p=>p.L==="C")?" <b>Coagulation positive:</b> heightened post-fall neurological surveillance if a fall occurs.":"")+"</div>":"";}
+  const tr=$("#tipsRisks");if(tr){const r=tipsRisks();tr.innerHTML='<div class="info"><b>Fall risks for the tip sheet:</b> '+(r.length?esc(r.join("; ")):"none identified")+"</div>";applyTips();const hint=$("#tipsHint");if(hint)hint.textContent=S.tips.touched?"You edited these fields; they will not change automatically. Use Re-apply to reset.":"Pre-filled as suggestions from your Morse, risk level and MSST answers. Change anything that does not fit. The note lists them as in place only when you check \"sheet generated and posted\" above.";}
+  const sr=$("#steadiRes");if(sr){const c=steadiCalc();sr.innerHTML=c.complete?'<div class="info">'+levelBadge(c.level)+" "+(c.level==="low"?"Educate; reassess annually.":c.level==="moderate"?"Gait and balance assessment; complete all three STEADI tests.":"Full multifactorial assessment + referral.")+"</div>":"";
+    const tc=$("#steadiTestsCard");if(tc&&tc.dataset.sig!==String(c.complete)+c.level){tc.dataset.sig=String(c.complete)+c.level;tc.innerHTML=steadiTestsHtml();}}
+  const tt=$("#stTestRes");if(tt){const t=steadiTests();let h="";const f=(x,lab)=>x?lab+(x.hi===true?' <b class="no">at risk</b>':x.hi===false?' <b class="ok">not at risk</b>':""):"";
+    if(t.tug)h+="<div>"+f(t.tug,"TUG "+t.tug.v+" sec (high risk 12 or more)")+"</div>";
+    if(t.chair)h+="<div>"+f(t.chair,"Chair stand "+t.chair.v+(t.chair.cut!=null?" (below "+t.chair.cut+" is below average for age/sex)":" (enter age and sex for cutoff)"))+"</div>";
+    if(t.bal)h+="<div>"+f(t.bal,"Tandem stance "+t.bal.v+" sec (unable to hold 10 sec = at risk)")+"</div>";
+    if(t.orth)h+="<div>"+f(t.orth,"Systolic drop "+t.orth.d+" mmHg (20 or more = orthostatic hypotension)")+"</div>";
+    if(t.meds)h+="<div>"+f(t.meds,t.meds.v+" medications (4 or more = risk factor)")+"</div>";
+    tt.innerHTML=h;}
+  const mh=$("#mahcRes");if(mh){const m=mahcCalc();mh.innerHTML='<div class="info"><span class="score">'+m.score+'</span> of 10 '+(m.complete?levelBadge(m.level):'<small class="m">(check "All 10 elements reviewed" to finish)</small>')+'<div class="hint">0-3 low | 4-5 moderate | 6 or higher high</div></div>';}
+  const fa=$("#fallAlert");if(fa){const f=S.fall,a=abcsCalc();const c=a.pos.some(p=>p.L==="C");const head=["Confirmed","Suspected","Unknown"].includes(f.head);
+    fa.innerHTML=(head&&(c||!SETTINGS[S.setting].tools.includes("abcs")))?'<div class="alert"><b>Head strike (or unknown) '+(c?"with anticoagulation / bleeding risk":"- anticoagulation status not captured by ABCS")+":</b> consider head CT and notify the provider now. Heightened neurological surveillance.</div>":"";}
+}
+function refreshActionsDyn(){const al=$("#actList");if(!al)return;const st=SETTINGS[S.setting];
+  al.innerHTML=st.actions.map((a,i)=>a.auto?'<div class="cbl"><span>'+(toolDone(a.auto)?'<span class="ok">Done</span>':'<span class="no">Open</span>')+' &nbsp;'+esc(a.t)+' <small class="m">(automatic)</small></span></div>':cb("act.a"+i,a.t)).join("")+'<div class="info"><b>Reassessment:</b> '+esc(st.reassess)+"</div>";
+  const ib=$("#ivBox");const lvl=overallLevel();let h="";
+  if(!lvl)h='<div class="card"><h2>Recommended interventions</h2><div class="alert">Complete the risk assessment (step 2) to see interventions matched to the risk level.</div></div>';
+  else{const g=buildIv();h='<div class="card"><h2>Interventions: '+levelBadge(lvl)+'</h2><div class="hint">Tick each item that is in place or ordered. Only ticked items go in the note (unless you choose to list the rest on the comments card).</div>';
+    curGroups=g;g.forEach((gr,i)=>{h+="<h3>"+esc(gr.title)+'<button class="lnk" data-sel="'+i+':1">Select all</button><button class="lnk" data-sel="'+i+':0">Clear</button></h3>'+gr.items.map(it=>cb("iv."+it.id,it.t)).join("");});h+="</div>";}
+  if(ib.dataset.sig!==h){ib.dataset.sig=h;ib.innerHTML=h;}}
+
+/* ============================ NOTE ============================ */
+function wrap(text,indent,first){const W=78;const ind=" ".repeat(indent||0);const f=first!=null?first:ind;const words=String(text).split(/\s+/).filter(Boolean);const out=[];let line=f;let lead=true;
+  for(const w of words){if((line+(lead?"":" ")+w).length>W&&!lead){out.push(line);line=ind+w;}else{line+=(lead?"":" ")+w;}lead=false;}out.push(line);return out;}
+function buildNote(){const st=S.setting;if(!st)return;const L=[];const A=(t,i,f)=>wrap(t,i,f).forEach(x=>L.push(x));const H=t=>{L.push("");L.push(t.toUpperCase());};
+  const lvl=overallLevel();const cfg=SETTINGS[st];
+  L.push("FALL RISK SCREENING AND ASSESSMENT");
+  A("Date/time: "+S.dt+"   Setting: "+cfg.name,0);if(S.etype)A("Reason for screening: "+S.etype,0);if(S.unit)A("Unit/clinic: "+S.unit,0);if(S.assessor)A("Assessor: "+S.assessor,0);
+  A("Framework: VHA Fall Prevention and Management Bundle (NCPS, June 2026).",0);
+  H("Risk assessment");
+  if(cfg.tools.includes("morse")){const m=morseCalc();if(m.complete){L.push("Morse Fall Scale: "+m.score+" - "+levelName(m.level)+" RISK");MORSE.forEach(q=>{const o=q.o.find(x=>x[0]===S.morse[q.k]);A(q.t.replace(/^\d\.\s*/,"")+": "+o[1]+" ("+o[2]+")",4,"  - ");});
+      if(m.overridden)A("Clinical override: risk level changed to "+levelName(m.eff)+". Rationale: "+(S.mo.why||"not documented")+".",2);}else L.push("Morse Fall Scale: NOT COMPLETED");}
+  if(st==="icu"&&S.icu.delirium)L.push("Delirium screen: "+S.icu.delirium);if(st==="mh"&&S.mh.lig)A("Ligature-risk equipment modifications considered; precautions follow MHEOCC (VHA Directive 1167).",0);
+  if(cfg.tools.includes("abcs")){const a=abcsCalc();const lab=st==="clc"?"Fall injury risk factors (ABCS)":"ABCS injury risk";if(!a.complete)L.push(lab+": NOT COMPLETED");else if(!a.pos.length)L.push(lab+": no factors present");else{L.push(lab+": POSITIVE for "+a.pos.map(p=>p.L).join(", "));a.pos.forEach(p=>A(ABCS[p.L].name+": "+p.items.join("; "),4,"  - "));if(a.pos.some(p=>p.L==="C"))A("Coagulation positive: heightened post-fall neurological surveillance if a fall occurs.",2);}}
+  if(cfg.tools.includes("msst")){const m=msstCalc();if(m){A("VA-MSST mobility level: "+MSST_LEVELS[m].n+" ("+MSST_LEVELS[m].d+"). Equipment: "+MSST_LEVELS[m].eq.join("; ")+".",0);const mf=morseCalc();if(m==="4A"&&mf.complete&&mf.eff==="high")A("High fall risk with Level 4A: supervision during all mobility.",2);}else L.push("VA-MSST: NOT COMPLETED");}
+  if(cfg.tools.includes("tips")){A("TIPS tip sheet generated and posted at bedside: "+(S.tips.posted?"yes":"no")+".",0);const r=tipsRisks();A("TIPS fall risks: "+(r.length?r.join("; "):"none identified")+".",0);const t=S.tips,ti=[];if(t.comm)ti.push("communicate recent fall/risk of harm");if(t.ivassist)ti.push("assist with IV pole/equipment when walking");if(t.alarm)ti.push("bed alarm on");if(t.aid)ti.push("mobility aid: "+t.aid);if(t.hrs)ti.push("toileting every "+t.hrs+(t.tmethod?" ("+t.tmethod.toLowerCase()+")":""));if(t.transfer)ti.push("transfer assistance: "+t.transfer);if(S.tips.inotes)A("TIPS individual notes: "+S.tips.inotes,0);if(ti.length)A((S.tips.posted?"TIPS interventions: ":"TIPS interventions suggested, NOT yet confirmed: ")+ti.join("; ")+".",0);}
+  if(cfg.tools.includes("clcplan")){const fs=CLC_FACTORS.filter(f=>S.clc.f[f[0]]).map(f=>f[1]);A("CLC fall risk factors identified: "+(fs.length?fs.join("; "):"none selected")+".",0);const cp=[];if(S.clc.plan)cp.push("Veteran-centered Fall Prevention care plan developed/updated");if(S.clc.idt)cp.push("reviewed with IDT");if(S.clc.fam)cp.push("reviewed with Veteran/family");if(S.clc.mds)cp.push("updated with quarterly MDS");if(cp.length)A("Care plan: "+cp.join("; ")+".",0);}
+  if(cfg.tools.includes("steadi")){const c=steadiCalc();const s=S.st;if(c.complete){A("CDC STEADI screen: "+levelName(c.level)+" RISK. Fallen in past year: "+(s.fallen==="Y"?"yes ("+(s.count==="2+"?"2 or more falls":"1 fall")+", "+(s.injured==="Y"?"with injury":"no injury")+")":"no")+"; unsteady: "+(s.unsteady==="Y"?"yes":"no")+"; worry about falling: "+(s.worry==="Y"?"yes":"no")+".",0);
+      if(c.positive){const t=steadiTests();const p=[];if(t.tug)p.push("TUG "+t.tug.v+" sec ("+(t.tug.hi?"at risk":"not at risk")+")");if(t.chair)p.push("30-sec chair stand "+t.chair.v+(t.chair.hi===true?" (below age/sex cutoff)":t.chair.hi===false?" (at or above cutoff)":""));if(t.bal)p.push("tandem stance "+t.bal.v+" sec ("+(t.bal.hi?"at risk":"not at risk")+")");if(t.orth)p.push("systolic drop "+t.orth.d+" mmHg ("+(t.orth.hi?"orthostatic hypotension":"no orthostatic hypotension")+")");if(t.meds)p.push(t.meds.v+" medications"+(t.meds.hi?" (4 or more)":""));if(p.length)A("Performance tests/assessment: "+p.join("; ")+".",0);
+        const d=[];if(s.vis)d.push("visual acuity screened");if(s.cog)d.push("cognitive screen done");if(s.feet)d.push("foot/footwear assessed");if(s.vitd)d.push("vitamin D checked");if(s.home)d.push("home safety screen done");if(d.length)A("Also completed: "+d.join("; ")+".",0);}}else L.push("CDC STEADI screen: NOT COMPLETED");}
+  if(cfg.tools.includes("mahc")){const m=mahcCalc();if(m.complete){A("MAHC-10 score: "+m.score+" of 10 - "+levelName(m.level)+" RISK. Positive elements: "+(MAHC.filter(x=>S.mahc[x[0]]===true).map(x=>x[1].split(/[:(]/)[0].trim()).join("; ")||"none")+".",0);}else L.push("MAHC-10: NOT COMPLETED");}
+  L.push("");A("OVERALL FALL RISK LEVEL: "+(lvl?levelName(lvl):"NOT DETERMINED"),0);
+  const iv=ivStatus();
+  if(lvl){H("Interventions in place / ordered");if(iv.inP.length){let cur="";iv.inP.forEach(x=>{if(x.g!==cur){cur=x.g;L.push(cur+":");}A(x.t,4,"  - ");});}else L.push("None documented.");
+    if(S.showNot&&iv.notP.length){H("Recommended, not yet in place");let cur="";iv.notP.forEach(x=>{if(x.g!==cur){cur=x.g;L.push(cur+":");}A(x.t,4,"  - ");});}}
+  const done=[];cfg.actions.forEach((a,i)=>{if(!a.auto&&S.act["a"+i])done.push(a.t);});if(done.length){H("Required actions completed");done.forEach(t=>A(t,4,"  - "));}
+  const edu=Object.keys(S.edu).filter(k=>S.edu[k]);if(edu.length||S.teach){H("Education");const all=(isInpt()||st==="clc"?EDU_INPT:st==="amb"?EDU_AMB:EDU_HBPC);const tp=all.filter(t=>S.edu[slug(t)]);if(tp.length)A("Topics: "+tp.join("; ")+".",0);if(S.who)L.push("Provided to: "+S.who);if(S.teach)L.push("Teach-back: "+S.teach);}
+  if(S.etype&&/fall/i.test(S.etype)){const f=S.fall;H("Post-fall assessment");A("Fall date/time: "+f.dt+(f.loc?"   Location: "+f.loc:"")+(f.wit?"   "+f.wit:""),0);if(f.what)A("Activity at time of fall: "+f.what+".",0);A("Head strike: "+(f.head||"not documented")+".",0);A("Injuries: "+(f.inj||"not documented")+".",0);if(f.bp)A("Orthostatic BP/pulse: "+f.bp+".",0);
+    if(["Confirmed","Suspected","Unknown"].includes(f.head)&&abcsCalc().pos.some(p=>p.L==="C"))A("Head strike (or unknown) with anticoagulation/bleeding risk identified (ABCS C): head CT consideration and heightened neurological surveillance flagged.",0);
+    if(f.provider||f.ptime)A("Provider notified: "+(f.provider||"name not documented")+(f.ptime?" at "+f.ptime:"")+".",0);if(f.fam)L.push("Family/NOK notified: "+f.fam);
+    const ck=FALLCHECK.filter(c=>f.chk[c[0]]).map(c=>c[1]);if(ck.length){L.push("Completed:");ck.forEach(t=>A(t,4,"  - "));}
+    A("Tools rescored as above after this fall.",0);}
+  H("Reassessment");A(cfg.reassess,0);
+  if(S.comments.trim()){H("Comments");A(S.comments.trim(),0);}
+  const box=$("#noteBox");if(box)box.value=noteEdited?noteText:L.join("\n");
+  const w=[];if(cfg.tools.includes("morse")&&!morseCalc().complete)w.push("Morse Fall Scale is incomplete.");if(cfg.tools.includes("abcs")&&!abcsCalc().complete)w.push("ABCS has no selections and 'no factors present' is not checked.");if(cfg.tools.includes("msst")&&!msstCalc())w.push("MSST level not determined.");if(cfg.tools.includes("steadi")&&!steadiCalc().complete)w.push("STEADI screen is incomplete.");if(cfg.tools.includes("mahc")&&!mahcCalc().complete)w.push("MAHC-10 is incomplete.");if(!S.etype)w.push("Reason for screening not selected.");
+  const wb=$("#warn");if(wb)wb.innerHTML=w.length?'<div class="alert"><b>Check before copying:</b><ul style="margin:4px 0 0 18px;padding:0">'+w.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul></div>":"";}
+function copyNote(){const box=$("#noteBox");const msg=$("#copyMsg");const ok=()=>{msg.innerHTML='<span class="ok">Copied. Paste into your CPRS note (Ctrl+V).</span>';};
+  const fb=()=>{box.focus();box.select();try{document.execCommand("copy")?ok():msg.textContent="Press Ctrl+C to copy the selected text.";}catch(e){msg.textContent="Press Ctrl+C to copy the selected text.";}};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(box.value).then(ok,fb);else fb();}
+
+/* ============================ EVENTS ============================ */
+document.addEventListener("click",e=>{const b=e.target.closest("[data-step],[data-go],[data-act],[data-sel],#copyBtn,#regen,#reset");if(!b)return;
+  if(b.dataset.act){const a=b.dataset.act;
+    if(a==="tipsprint"){openTips();return;}
+    if(a==="tipsclose"){$("#tipsModal").style.display="none";return;}
+    if(a==="tipsdoprint"){window.print();return;}
+    if(a==="morse0")MORSE.forEach(q=>{S.morse[q.k]=q.o[0][0];});
+    else if(a==="abcs0"){["A","B","C","S"].forEach(L=>{S.abcs[L]={};});S.abcs.done=true;}
+    else if(a==="steadi0"){S.st.fallen="N";S.st.count="";S.st.injured="";S.st.unsteady="N";S.st.worry="N";}
+    else if(a==="tipsreset"){S.tips.touched=false;}
+    else if(a==="eduall"){const all=(isInpt()||S.setting==="clc"?EDU_INPT:S.setting==="amb"?EDU_AMB:EDU_HBPC);all.forEach(t=>{S.edu[slug(t)]=true;});}
+    render();if(a==="tipsreset")refreshDyn();return;}
+  if(b.dataset.sel){const [i,v]=b.dataset.sel.split(":");curGroups[Number(i)].items.forEach(it=>{S.iv[it.id]=v==="1";});const ib=$("#ivBox");ib.dataset.sig="";refreshActionsDyn();return;}
+  if(b.dataset.step||b.dataset.go){const n=Number(b.dataset.step||b.dataset.go);if(n>1&&!S.setting)return;if(n===4&&!S.etype){}step=n;render();window.scrollTo(0,0);}
+  else if(b.id==="copyBtn")copyNote();
+  else if(b.id==="regen"){noteEdited=false;buildNote();$("#copyMsg").textContent="";}
+  else if(b.id==="reset"){if(confirm("Clear everything and start a new screening? Nothing has been saved.")){S=newState();noteEdited=false;noteText="";step=1;render();window.scrollTo(0,0);}}});
+function onInput(e){const t=e.target;if(t.id==="noteBox"){noteEdited=true;noteText=t.value;return;}
+  if(t.id==="tipsRoom"){S.tips.room=t.value.trim();$("#tipsRoomOut").textContent=S.tips.room||"____";return;}
+  if(t.id==="tipsName"){S.tips.pname=t.value.trim();$("#tipsNameOut").textContent=S.tips.pname||"____";return;}
+  if(t.id==="tipsNotes"){S.tips.inotes=t.value.trim();$("#tipsNotesOut").textContent=S.tips.inotes;return;}const k=t.dataset&&t.dataset.k;if(!k)return;
+  let v;if(t.type==="checkbox")v=t.checked;else if(t.type==="radio"){if(!t.checked)return;v=t.value;if(v==="true")v=true;else if(v==="false")v=false;}else v=t.value;
+  if(e.type==="input"&&(t.tagName==="SELECT"||t.type==="radio"||t.type==="checkbox"))return;
+  setP(k,v);
+  if(k.startsWith("tips.")&&k!=="tips.posted"&&k!=="tips.med")S.tips.touched=true;
+  if(k.startsWith("abcs.")&&k!=="abcs.done")S.abcs.done=false;
+  if(k.startsWith("msst."))S.msstManual="";
+  if(k==="setting"){S.etype="";S.msst={};noteEdited=false;render();return;}
+  if(k==="etype"||k==="st.fallen"){render();return;}
+  if(k.startsWith("act.")||k.startsWith("iv.")||k.startsWith("uni.")||k.startsWith("edu.")||k==="teach"||k==="who"||k==="comments"||k==="showNot"){if(step===3){renderSummary();if(!k.startsWith("iv."))refreshActionsDyn();}noteEdited=noteEdited;return;}
+  if(step===2){if(k.startsWith("msst")||k==="msstManual")renderMSST();refreshDyn();}
+  else renderSummary();
+  if(k==="rep90"&&step===1)renderSummary();}
+document.addEventListener("change",onInput);document.addEventListener("input",onInput);
+
+S=newState();render();
+</script>
+</body>
+</html>
